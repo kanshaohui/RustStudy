@@ -1,10 +1,11 @@
-use smart_pointers::{List, MyBox, hello, CustomSmartPoint};
+use smart_pointers::{List, MyBox, hello, CustomSmartPoint, Node};
 use smart_pointers::List::{Cons, Nil};
 use smart_pointers::RcList::{RcCons, RcNil};
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use std::cell::RefCell;
 use smart_pointers::RefCellList::{RefCellCons, RefCellNil};
 use smart_pointers::StackOverList::{StackOverCons, StackOverNil};
+use std::borrow::Borrow;
 
 fn main() {
     let x = 5;
@@ -76,4 +77,34 @@ fn main() {
 
     //Stack over
     //println!("a next item {:?}", stack_over_a.tail());
+
+    //use weak<T>
+    let leaf_weak = Rc::new(Node {
+        v: 25,
+        parent: RefCell::new(Weak::new()),
+        children: RefCell::new(vec![]),
+    });
+    println!("leaf parent is {:?}", leaf_weak.parent.borrow().upgrade());
+    println!("leaf strong count is {}, weak count is {}", Rc::strong_count(&leaf_weak),
+        Rc::weak_count(&leaf_weak));
+    {
+        let branch_weak = Rc::new(Node {
+            v: 27,
+            parent: RefCell::new(Weak::new()),
+            children: RefCell::new(vec![Rc::clone(&leaf_weak)]),
+        });
+        *leaf_weak.parent.borrow_mut() = Rc::downgrade(&branch_weak);
+        println!("branch parent is {:?}", branch_weak.parent.borrow().upgrade());
+        println!("leaf strong count is {}, weak count is {}", Rc::strong_count(&leaf_weak),
+            Rc::weak_count(&leaf_weak));
+        println!("branch strong count is {}, weak count is {}", Rc::strong_count(&branch_weak),
+            Rc::weak_count(&branch_weak));
+        println!("leaf parent is {:?}", leaf_weak.parent.borrow().upgrade());
+    }
+
+    println!("leaf strong count is {}, weak count is {}", Rc::strong_count(&leaf_weak),
+            Rc::weak_count(&leaf_weak));
+
+
+
 }

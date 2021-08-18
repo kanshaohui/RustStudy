@@ -1,5 +1,5 @@
 use std::ops::Deref;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use std::cell::{RefCell, Ref};
 use crate::StackOverList::StackOverCons;
 
@@ -90,6 +90,13 @@ impl StackOverList {
             StackOverNil => None,
         }
     }
+}
+
+#[derive(Debug)]
+pub struct Node {
+    pub v: i32,
+    pub parent: RefCell<Weak<Node>>,
+    pub children: RefCell<Vec<Rc<Node>>>,
 }
 
 
